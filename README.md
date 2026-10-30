@@ -64,6 +64,7 @@ Existing files are never overwritten, so your changes are kept across updates.
 | `luxfeed.cooldown.vip` | ❌ nobody | 30-minute cooldown. |
 | `luxfeed.cooldown.premium` | ❌ nobody | 15-minute cooldown. |
 | `luxfeed.cooldown.staff` | ❌ nobody | 5-minute cooldown. |
+| `luxfeed.cooldown.bypass` | 👑 operators | No cooldown. |
 
 > 💡 The cooldown tiers are examples from the default `config.yml`. Rename, add or remove them freely.
 
@@ -88,6 +89,10 @@ cooldowns:
   staff:
     permission: "luxfeed.cooldown.staff"
     duration-minutes: 5
+
+  bypass:                       # granted to operators by default
+    permission: "luxfeed.cooldown.bypass"
+    duration-minutes: 0
 ```
 
 - A player holding **several** tier permissions gets the **shortest** cooldown.

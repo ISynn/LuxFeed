@@ -25,3 +25,8 @@ cooldowns:
   staff:
     permission: "luxfeed.cooldown.staff"
     duration-minutes: 5
+
+  # Granted to server operators by default: no cooldown.
+  bypass:
+    permission: "luxfeed.cooldown.bypass"
+    duration-minutes: 0

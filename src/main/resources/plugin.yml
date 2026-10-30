@@ -22,3 +22,6 @@ permissions:
   luxfeed.cooldown.staff:
     description: Applies the 'staff' /feed cooldown.
     default: false
+  luxfeed.cooldown.bypass:
+    description: Removes the /feed cooldown.
+    default: op
