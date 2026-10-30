@@ -12,6 +12,10 @@ repositories {
 
 // Matches the Paper server build this plugin is developed and tested against (Paper 26.2 build 135).
 val paperApiVersion = "26.2.build.135-stable"
+val mockitoVersion = "5.24.0"
+
+// Mockito is attached as a Java agent: dynamic agent loading is restricted on recent JDKs.
+val mockitoAgent = configurations.create("mockitoAgent")
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
@@ -20,6 +24,10 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    mockitoAgent("org.mockito:mockito-core:$mockitoVersion") {
+        isTransitive = false
+    }
 }
 
 java {
@@ -42,4 +50,5 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
+    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-javaagent:${mockitoAgent.singleFile}") })
 }

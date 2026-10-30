@@ -4,3 +4,9 @@ main: io.github.isynn.luxfeed.LuxFeedPlugin
 api-version: '26.2'
 description: Restores hunger and saturation with a permission-based cooldown.
 author: ISynn
+
+# The /feed command is registered in code through Paper's command API.
+permissions:
+  luxfeed.feed:
+    description: Allows using /feed.
+    default: true

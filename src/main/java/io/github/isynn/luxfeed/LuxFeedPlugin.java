@@ -1,19 +1,21 @@
 package io.github.isynn.luxfeed;
 
+import io.github.isynn.luxfeed.command.FeedCommand;
+import io.github.isynn.luxfeed.messages.Message;
 import io.github.isynn.luxfeed.messages.MessageService;
 import java.io.File;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class LuxFeedPlugin extends JavaPlugin {
 
-    private MessageService messages;
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
         saveDefaultLanguageFiles();
-        messages = MessageService.load(getConfig().getString("language"),
+        MessageService messages = MessageService.load(getConfig().getString("language"),
                 getDataFolder().toPath().resolve("lang"), this::getResource, getLogger());
+
+        registerCommand("feed", messages.plain(Message.COMMAND_DESCRIPTION), new FeedCommand(messages));
     }
 
     @Override
