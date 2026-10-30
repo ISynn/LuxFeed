@@ -12,6 +12,8 @@ repositories {
 
 // Matches the Paper server build this plugin is developed and tested against (Paper 26.2 build 135).
 val paperApiVersion = "26.2.build.135-stable"
+// Paper 26.2 ships this driver (see META-INF/libraries.list in the server jar), so it is not bundled.
+val sqliteJdbcVersion = "3.49.1.0"
 val mockitoVersion = "5.24.0"
 
 // Mockito is attached as a Java agent: dynamic agent loading is restricted on recent JDKs.
@@ -19,8 +21,10 @@ val mockitoAgent = configurations.create("mockitoAgent")
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
+    compileOnly("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
 
     testImplementation("io.papermc.paper:paper-api:$paperApiVersion")
+    testImplementation("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -50,5 +54,7 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
+    // sqlite-jdbc loads a native library.
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
     jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-javaagent:${mockitoAgent.singleFile}") })
 }
