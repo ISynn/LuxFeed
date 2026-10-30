@@ -6,7 +6,20 @@ description: Restores hunger and saturation with a permission-based cooldown.
 author: ISynn
 
 # The /feed command is registered in code through Paper's command API.
+# Cooldown tiers added in config.yml get their permission registered at startup (default: false).
 permissions:
   luxfeed.feed:
     description: Allows using /feed.
     default: true
+  luxfeed.cooldown.default:
+    description: Applies the 'default' /feed cooldown.
+    default: true
+  luxfeed.cooldown.vip:
+    description: Applies the 'vip' /feed cooldown.
+    default: false
+  luxfeed.cooldown.premium:
+    description: Applies the 'premium' /feed cooldown.
+    default: false
+  luxfeed.cooldown.staff:
+    description: Applies the 'staff' /feed cooldown.
+    default: false

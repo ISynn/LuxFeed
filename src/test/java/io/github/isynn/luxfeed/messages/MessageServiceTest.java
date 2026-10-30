@@ -3,6 +3,7 @@ package io.github.isynn.luxfeed.messages;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.isynn.luxfeed.testing.LogCapture;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,17 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,28 +29,7 @@ class MessageServiceTest {
     @TempDir
     Path languageFolder;
 
-    private final List<String> warnings = new ArrayList<>();
-    private Logger logger;
-
-    @BeforeEach
-    void setUpLogger() {
-        logger = Logger.getAnonymousLogger();
-        logger.setUseParentHandlers(false);
-        logger.addHandler(new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                warnings.add(record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() {
-            }
-        });
-    }
+    private final LogCapture log = new LogCapture();
 
     @Test
     void resolvesEnglishMessages() {
@@ -85,7 +59,7 @@ class MessageServiceTest {
         MessageService messages = load(language);
 
         assertEquals(load("en").plain(Message.NO_PERMISSION), messages.plain(Message.NO_PERMISSION));
-        assertTrue(warnings.stream().anyMatch(warning -> warning.contains("Unsupported language")));
+        assertTrue(log.contains("Unsupported language"));
     }
 
     @Test
@@ -98,7 +72,7 @@ class MessageServiceTest {
         Function<String, InputStream> englishOnly =
                 path -> path.equals("lang/fr.yml") ? null : JAR_RESOURCES.apply(path);
 
-        MessageService messages = MessageService.load("fr", languageFolder, englishOnly, logger);
+        MessageService messages = MessageService.load("fr", languageFolder, englishOnly, log.logger());
 
         assertEquals("Only players can use this command.", messages.plain(Message.PLAYERS_ONLY));
     }
@@ -120,7 +94,7 @@ class MessageServiceTest {
         MessageService messages = load("en");
 
         assertEquals("You cannot use /feed while in combat.", messages.plain(Message.FEED_IN_COMBAT));
-        assertTrue(warnings.stream().anyMatch(warning -> warning.contains("is invalid")));
+        assertTrue(log.contains("is invalid"));
     }
 
     @ParameterizedTest
@@ -164,7 +138,7 @@ class MessageServiceTest {
     }
 
     private MessageService load(String language) {
-        return MessageService.load(language, languageFolder, JAR_RESOURCES, logger);
+        return MessageService.load(language, languageFolder, JAR_RESOURCES, log.logger());
     }
 
     private static String plain(Component component) {

@@ -3,3 +3,25 @@
 # Language of the player messages: "en" (English) or "fr" (French).
 # Message texts can be edited in plugins/LuxFeed/lang/<language>.yml.
 language: "en"
+
+# Time to wait between two successful uses of /feed.
+# A player holding several of these permissions gets the shortest duration.
+# The "default" tier also applies to players holding none of them.
+# duration-minutes must be a whole number of minutes, 0 or more (0 = no cooldown).
+# Invalid tiers are ignored with a warning in the console.
+cooldowns:
+  default:
+    permission: "luxfeed.cooldown.default"
+    duration-minutes: 60
+
+  vip:
+    permission: "luxfeed.cooldown.vip"
+    duration-minutes: 30
+
+  premium:
+    permission: "luxfeed.cooldown.premium"
+    duration-minutes: 15
+
+  staff:
+    permission: "luxfeed.cooldown.staff"
+    duration-minutes: 5
