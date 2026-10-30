@@ -21,12 +21,13 @@ class FeedCommandTest {
 
     private final MessageService messages = TestMessages.bundled("en");
     private final Player player = mock(Player.class);
+    private boolean inCombat;
     private FeedCommand command;
 
     @BeforeEach
     void setUp() {
         when(player.hasPermission(FeedCommand.PERMISSION)).thenReturn(true);
-        command = new FeedCommand(messages);
+        command = new FeedCommand(messages, checkedPlayer -> inCombat);
     }
 
     @Test
@@ -45,6 +46,16 @@ class FeedCommandTest {
         command.execute(sourceOf(player), new String[0]);
 
         verify(player).sendMessage(messages.get(Message.NO_PERMISSION));
+        verifyNotFed();
+    }
+
+    @Test
+    void playerInCombatIsRefused() {
+        inCombat = true;
+
+        command.execute(sourceOf(player), new String[0]);
+
+        verify(player).sendMessage(messages.get(Message.FEED_IN_COMBAT));
         verifyNotFed();
     }
 

@@ -1,5 +1,6 @@
 package io.github.isynn.luxfeed.command;
 
+import io.github.isynn.luxfeed.combat.CombatCheck;
 import io.github.isynn.luxfeed.messages.Message;
 import io.github.isynn.luxfeed.messages.MessageService;
 import io.papermc.paper.command.brigadier.BasicCommand;
@@ -18,9 +19,11 @@ public final class FeedCommand implements BasicCommand {
     private static final float MAX_SATURATION = 20.0F;
 
     private final MessageService messages;
+    private final CombatCheck combatCheck;
 
-    public FeedCommand(MessageService messages) {
+    public FeedCommand(MessageService messages, CombatCheck combatCheck) {
         this.messages = messages;
+        this.combatCheck = combatCheck;
     }
 
     @Override
@@ -32,6 +35,10 @@ public final class FeedCommand implements BasicCommand {
         }
         if (!player.hasPermission(PERMISSION)) {
             player.sendMessage(messages.get(Message.NO_PERMISSION));
+            return;
+        }
+        if (combatCheck.isInCombat(player)) {
+            player.sendMessage(messages.get(Message.FEED_IN_COMBAT));
             return;
         }
 

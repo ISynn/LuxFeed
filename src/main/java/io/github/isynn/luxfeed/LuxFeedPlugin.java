@@ -1,5 +1,7 @@
 package io.github.isynn.luxfeed;
 
+import io.github.isynn.luxfeed.combat.CombatCheck;
+import io.github.isynn.luxfeed.combat.StubCombatCheck;
 import io.github.isynn.luxfeed.command.FeedCommand;
 import io.github.isynn.luxfeed.messages.Message;
 import io.github.isynn.luxfeed.messages.MessageService;
@@ -15,7 +17,10 @@ public final class LuxFeedPlugin extends JavaPlugin {
         MessageService messages = MessageService.load(getConfig().getString("language"),
                 getDataFolder().toPath().resolve("lang"), this::getResource, getLogger());
 
-        registerCommand("feed", messages.plain(Message.COMMAND_DESCRIPTION), new FeedCommand(messages));
+        // No combat system is connected yet: swap this for an adapter to the network's combat plugin.
+        CombatCheck combatCheck = new StubCombatCheck();
+
+        registerCommand("feed", messages.plain(Message.COMMAND_DESCRIPTION), new FeedCommand(messages, combatCheck));
     }
 
     @Override
