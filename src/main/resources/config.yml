@@ -1,0 +1,5 @@
+# LuxFeed configuration.
+
+# Language of the player messages: "en" (English) or "fr" (French).
+# Message texts can be edited in plugins/LuxFeed/lang/<language>.yml.
+language: "en"

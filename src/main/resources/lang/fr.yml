@@ -1,0 +1,21 @@
+# LuxFeed - French messages.
+# Messages use the MiniMessage format (for example <red>, <green>, <bold>).
+# Any message removed from this file falls back to the default text bundled with the plugin.
+
+command-description: "Restaure votre faim et votre saturation."
+
+feed:
+  success: "<green>Votre faim et votre saturation ont été entièrement restaurées."
+  # <remaining> is replaced by the time left, built from the "time" entries below.
+  cooldown: "<red>Vous devez attendre <remaining> avant de réutiliser /feed."
+  in-combat: "<red>Vous ne pouvez pas utiliser /feed en combat."
+  error: "<red>/feed est indisponible pour le moment. Veuillez réessayer plus tard."
+
+no-permission: "<red>Vous n'avez pas la permission d'utiliser cette commande."
+players-only: "<red>Seuls les joueurs peuvent utiliser cette commande."
+
+# <amount> is replaced by the number of hours, minutes or seconds.
+time:
+  hours: "<amount> h"
+  minutes: "<amount> min"
+  seconds: "<amount> s"
