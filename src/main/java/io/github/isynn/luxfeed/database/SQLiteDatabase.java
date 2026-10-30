@@ -35,7 +35,6 @@ public final class SQLiteDatabase implements AutoCloseable {
 
     private final Path file;
     private Connection connection;
-    private boolean closed;
 
     public SQLiteDatabase(Path file) {
         this.file = file.toAbsolutePath();
@@ -43,9 +42,6 @@ public final class SQLiteDatabase implements AutoCloseable {
 
     /** Opens the connection and creates the table if needed; does nothing if already connected. */
     public synchronized void connect() throws SQLException {
-        if (closed) {
-            throw new SQLException("The database has been closed.");
-        }
         if (connection != null) {
             return;
         }
@@ -97,10 +93,8 @@ public final class SQLiteDatabase implements AutoCloseable {
         }
     }
 
-    /** Closes the connection; later calls fail instead of reopening it. */
     @Override
     public synchronized void close() throws SQLException {
-        closed = true;
         if (connection != null) {
             Connection current = connection;
             connection = null;

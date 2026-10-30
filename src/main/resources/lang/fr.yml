@@ -2,8 +2,6 @@
 # Messages use the MiniMessage format (for example <red>, <green>, <bold>).
 # Any message removed from this file falls back to the default text bundled with the plugin.
 
-command-description: "Restaure votre faim et votre saturation."
-
 feed:
   success: "<green>Votre faim et votre saturation ont été entièrement restaurées."
   # <remaining> is replaced by the time left, built from the "time" entries below.

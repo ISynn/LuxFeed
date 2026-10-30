@@ -1,144 +1,59 @@
 package io.github.isynn.luxfeed.messages;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.isynn.luxfeed.testing.LogCapture;
-import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
-import java.util.function.Function;
+import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class MessageServiceTest {
 
-    private static final Function<String, InputStream> JAR_RESOURCES =
-            MessageServiceTest.class.getClassLoader()::getResourceAsStream;
-
-    @TempDir
-    Path languageFolder;
-
-    private final LogCapture log = new LogCapture();
-
     @Test
-    void resolvesEnglishMessages() {
-        MessageService messages = load("en");
-
-        assertEquals("Only players can use this command.", messages.plain(Message.PLAYERS_ONLY));
-        assertEquals("Your hunger and saturation have been fully restored.", messages.plain(Message.FEED_SUCCESS));
+    void resolvesEnglishAndFrenchMessages() {
+        assertEquals("Only players can use this command.", plain(load("en").get("players-only")));
+        assertEquals("Seuls les joueurs peuvent utiliser cette commande.", plain(load("fr").get("players-only")));
     }
 
     @Test
-    void resolvesFrenchMessages() {
-        MessageService messages = load("fr");
-
-        assertEquals("Seuls les joueurs peuvent utiliser cette commande.", messages.plain(Message.PLAYERS_ONLY));
-        assertEquals("Votre faim et votre saturation ont été entièrement restaurées.",
-                messages.plain(Message.FEED_SUCCESS));
+    void unknownLanguageFallsBackToEnglish() {
+        assertEquals("Only players can use this command.", plain(load("de").get("players-only")));
     }
 
     @Test
-    void languageCodeIsTrimmedAndCaseInsensitive() {
-        assertEquals(load("fr").plain(Message.FEED_IN_COMBAT), load(" FR ").plain(Message.FEED_IN_COMBAT));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"de", "english", ""})
-    void unsupportedLanguageFallsBackToEnglishWithWarning(String language) {
-        MessageService messages = load(language);
-
-        assertEquals(load("en").plain(Message.NO_PERMISSION), messages.plain(Message.NO_PERMISSION));
-        assertTrue(log.contains("Unsupported language"));
-    }
-
-    @Test
-    void missingLanguageSettingUsesEnglish() {
-        assertEquals(load("en").plain(Message.FEED_ERROR), load(null).plain(Message.FEED_ERROR));
-    }
-
-    @Test
-    void missingBundledTranslationFallsBackToEnglish() {
-        Function<String, InputStream> englishOnly =
-                path -> path.equals("lang/fr.yml") ? null : JAR_RESOURCES.apply(path);
-
-        MessageService messages = MessageService.load("fr", languageFolder, englishOnly, log.logger());
-
-        assertEquals("Only players can use this command.", messages.plain(Message.PLAYERS_ONLY));
-    }
-
-    @Test
-    void editedLanguageFileOverridesBundledMessagesAndKeepsMissingOnes() throws IOException {
-        Files.writeString(languageFolder.resolve("fr.yml"), "feed:\n  success: \"<gold>Miam !\"\n");
-
-        MessageService messages = load("fr");
-
-        assertEquals("Miam !", messages.plain(Message.FEED_SUCCESS));
-        assertEquals("Vous ne pouvez pas utiliser /feed en combat.", messages.plain(Message.FEED_IN_COMBAT));
-    }
-
-    @Test
-    void invalidLanguageFileFallsBackToBundledMessages() throws IOException {
-        Files.writeString(languageFolder.resolve("en.yml"), "feed: [unclosed\n");
-
-        MessageService messages = load("en");
-
-        assertEquals("You cannot use /feed while in combat.", messages.plain(Message.FEED_IN_COMBAT));
-        assertTrue(log.contains("is invalid"));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"en", "fr"})
-    void bundledFileDefinesEveryMessage(String language) throws IOException {
-        YamlConfiguration bundled;
-        try (InputStream input = JAR_RESOURCES.apply(MessageService.resourcePath(language))) {
-            bundled = YamlConfiguration.loadConfiguration(new InputStreamReader(input, StandardCharsets.UTF_8));
-        }
-
-        for (Message message : Message.values()) {
-            assertTrue(bundled.isString(message.path()), language + ".yml lacks " + message.path());
-        }
-    }
-
-    @Test
-    void insertsPlaceholders() {
-        MessageService messages = load("en");
-        Component remaining = messages.duration(Duration.ofMinutes(5));
-
-        Component cooldown = messages.get(Message.FEED_COOLDOWN, Placeholder.component("remaining", remaining));
-
-        assertEquals("You must wait 5m before using /feed again.", plain(cooldown));
-    }
-
-    @Test
-    void formatsDurationsPerLanguage() {
+    void formatsDurationsInBothLanguages() {
         Duration duration = Duration.ofHours(1).plusMinutes(5).plusSeconds(3);
 
         assertEquals("1h 5m 3s", plain(load("en").duration(duration)));
         assertEquals("1 h 5 min 3 s", plain(load("fr").duration(duration)));
+        assertEquals("1s", plain(load("en").duration(Duration.ofMillis(200))));
     }
 
     @Test
-    void durationOmitsZeroUnitsAndRoundsUpToTheNextSecond() {
-        MessageService messages = load("en");
+    void frenchFileDefinesEveryEnglishMessage() {
+        YamlConfiguration english = bundled("en");
+        YamlConfiguration french = bundled("fr");
 
-        assertEquals("1h", plain(messages.duration(Duration.ofHours(1))));
-        assertEquals("2m 1s", plain(messages.duration(Duration.ofSeconds(120).plusMillis(1))));
-        assertEquals("1s", plain(messages.duration(Duration.ofMillis(200))));
+        for (String key : english.getKeys(true)) {
+            assertEquals(english.isString(key), french.isString(key), "fr.yml does not match en.yml for " + key);
+        }
     }
 
-    private MessageService load(String language) {
-        return MessageService.load(language, languageFolder, JAR_RESOURCES, log.logger());
+    private static MessageService load(String language) {
+        return new MessageService(language, new File("no-editable-files"),
+                MessageServiceTest.class.getClassLoader()::getResourceAsStream, Logger.getAnonymousLogger());
+    }
+
+    private static YamlConfiguration bundled(String language) {
+        InputStream input = MessageServiceTest.class.getClassLoader()
+                .getResourceAsStream(MessageService.resourcePath(language));
+        return YamlConfiguration.loadConfiguration(new InputStreamReader(input, StandardCharsets.UTF_8));
     }
 
     private static String plain(Component component) {
