@@ -1,0 +1,6 @@
+name: LuxFeed
+version: '${version}'
+main: io.github.isynn.luxfeed.LuxFeedPlugin
+api-version: '26.2'
+description: Restores hunger and saturation with a permission-based cooldown.
+author: ISynn
